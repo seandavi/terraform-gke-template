@@ -26,7 +26,14 @@ resource "google_container_cluster" "cluster" {
 
 resource "google_service_account" "cluster-serviceaccount" {
   account_id   = "cluster-serviceaccount"
-  display_name = "Service Account For Terraform To Make GKE Cluster"
+  display_name = "Service Account For Terraform to"
+}
+
+# The following allows the nodes to pull containers from gcr.io
+resource "google_project_iam_member" "allow-container-pull" {
+  project = var.project
+  role    = "roles/storage.objectViewer"
+  member  = "serviceAccount:${google_service_account.cluster-serviceaccount.email}"
 }
 
 resource "google_container_node_pool" "primary_preemptible_nodes" {
