@@ -28,6 +28,7 @@ kubectl annotate serviceaccount default \
 
 ```sh
 kubectl run -it test2 --image=gcr.io/cloud-builders/gsutil ls
+kubectl delete pod/test2
 ```
 
-Should list buckets
+Should list buckets and then delete test pod....
