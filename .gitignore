@@ -1,0 +1,11 @@
+.terraform.lock.hcl
+.terraform.tfstate.lock.info
+plan.out
+terraform.tfstate
+.terraform/modules/modules.json
+.terraform/providers/registry.terraform.io/hashicorp/external/2.2.0/darwin_amd64/terraform-provider-external_v2.2.0_x5
+.terraform/providers/registry.terraform.io/hashicorp/google/4.11.0/darwin_amd64/terraform-provider-google_v4.11.0_x5
+.terraform/providers/registry.terraform.io/hashicorp/kubernetes/2.8.0/darwin_amd64/terraform-provider-kubernetes_v2.8.0_x5
+.terraform/providers/registry.terraform.io/hashicorp/null/3.1.0/darwin_amd64/terraform-provider-null_v3.1.0_x5
+.terraform/providers/registry.terraform.io/hashicorp/random/3.1.0/darwin_amd64/terraform-provider-random_v3.1.0_x5
+terraform.tfstate.backup
