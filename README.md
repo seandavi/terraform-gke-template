@@ -17,7 +17,11 @@ gcloud container clusters get-credentials cluster-1 --zone us-central1-f
 Looks like we still need to do the following:
 
 ```sh
-kubectl annotate serviceaccount default --namespace default iam.gke.io/gcp-service-account=workload-identity-sa@omicidx-338300.iam.gserviceaccount.com
+PROJECT=omicidx-338300
+KUB_SA=workload-identity-sa \
+kubectl annotate serviceaccount default \
+  --namespace default \
+  iam.gke.io/gcp-service-account=$KUB_SA@$PROJECT.iam.gserviceaccount.com
 ```
 
 ## Testing
