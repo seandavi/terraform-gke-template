@@ -1,5 +1,11 @@
 This repo creates a google kubernetes cluster with workload identity activated.
 
+## Prerequisites
+
+Needs a bucket for the terraform state to pre-exist
+
+## Turning on
+
 To get going:
 
 ```sh
@@ -32,3 +38,9 @@ kubectl delete pod/test2
 ```
 
 Should list buckets and then delete test pod....
+
+## Turning off
+
+```sh
+terraform destroy
+```
