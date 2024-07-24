@@ -1,6 +1,6 @@
 terraform {
   backend "gcs" {
-    bucket = "omicidx-338300"
+    bucket = "cdsci-tf-store"
     prefix = "terraform/state"
   }
 }
