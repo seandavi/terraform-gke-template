@@ -17,13 +17,13 @@ terraform apply plan.out
 Once up and running, add kubernetes context:
 
 ```sh
-gcloud container clusters get-credentials cluster-1 --zone us-central1-f
+gcloud container clusters get-credentials cluster-1 --region us-central1
 ```
 
 Looks like we still need to do the following:
 
 ```sh
-PROJECT=omicidx-338300
+PROJECT=gap-som-dbmi-sd-app-fq9
 KUB_SA=workload-identity-sa \
 kubectl annotate serviceaccount default \
   --namespace default \
