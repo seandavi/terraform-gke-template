@@ -1,28 +1,56 @@
 variable "cluster_version" {
-  default = "1.21"
+  default = "1.29"
 }
-resource "google_container_cluster" "cluster" {
-  name               = "cluster-1"
-  location           = var.zone
-  min_master_version = var.cluster_version
-  project            = var.project
-  lifecycle {
-    ignore_changes = [
-      # Ignore changes to min-master-version as that gets changed
-      # after deployment to minimum precise version Google has
-      min_master_version,
-    ]
+
+resource "google_compute_network" "default" {
+  name = "example-network"
+
+  auto_create_subnetworks  = false
+  enable_ula_internal_ipv6 = true
+}
+
+resource "google_compute_subnetwork" "default" {
+  name = "example-subnetwork"
+
+  ip_cidr_range = "10.0.0.0/16"
+  region        = "us-central1"
+
+  stack_type       = "IPV4_IPV6"
+  ipv6_access_type = "EXTERNAL" # Change to "EXTERNAL" if creating an external loadbalancer
+
+  network = google_compute_network.default.id
+  secondary_ip_range {
+    range_name    = "services-range"
+    ip_cidr_range = "192.168.0.0/24"
   }
-  # We can't create a cluster with no node pool defined, but
-  # we want to only use separately managed node pools. So we
-  # create the smallest possible default node pool and
-  # immediately delete it.
-  remove_default_node_pool = true
-  initial_node_count       = 1
-  workload_identity_config {
-    workload_pool = "${var.project}.svc.id.goog"
+
+  secondary_ip_range {
+    range_name    = "pod-ranges"
+    ip_cidr_range = "192.168.1.0/24"
   }
 }
+
+resource "google_container_cluster" "default" {
+  name = "cluster-1"
+
+  location                 = "us-central1"
+  enable_autopilot         = true
+  enable_l4_ilb_subsetting = true
+
+  network    = google_compute_network.default.id
+  subnetwork = google_compute_subnetwork.default.id
+
+  ip_allocation_policy {
+    stack_type                    = "IPV4_IPV6"
+    services_secondary_range_name = google_compute_subnetwork.default.secondary_ip_range[0].range_name
+    cluster_secondary_range_name  = google_compute_subnetwork.default.secondary_ip_range[1].range_name
+  }
+
+  # Set `deletion_protection` to `true` will ensure that one cannot
+  # accidentally delete this instance by use of Terraform.
+  deletion_protection = false
+}
+
 
 resource "google_service_account" "cluster-serviceaccount" {
   account_id   = "cluster-serviceaccount"
@@ -34,41 +62,4 @@ resource "google_project_iam_member" "allow-container-pull" {
   project = var.project
   role    = "roles/storage.objectViewer"
   member  = "serviceAccount:${google_service_account.cluster-serviceaccount.email}"
-}
-
-resource "google_container_node_pool" "primary_preemptible_nodes" {
-  name       = "preempt-medium"
-  location   = var.zone
-  project    = var.project
-  cluster    = google_container_cluster.cluster.name
-  node_count = 1
-  autoscaling {
-    min_node_count = 1
-    max_node_count = 15
-  }
-  version = var.cluster_version
-  node_config {
-    preemptible  = true
-    machine_type = "e2-medium"
-    # Google recommends custom service accounts that have cloud-platform scope and
-    # permissions granted via IAM Roles.
-    service_account = google_service_account.cluster-serviceaccount.email
-    oauth_scopes = [
-      "https://www.googleapis.com/auth/cloud-platform"
-    ]
-    metadata = {
-      disable-legacy-endpoints = "true"
-    }
-  }
-
-  lifecycle {
-    ignore_changes = [
-      # Ignore changes to node_count, initial_node_count and version
-      # otherwise node pool will be recreated if there is drift between what 
-      # terraform expects and what it sees
-      initial_node_count,
-      node_count,
-      version
-    ]
-  }
 }
